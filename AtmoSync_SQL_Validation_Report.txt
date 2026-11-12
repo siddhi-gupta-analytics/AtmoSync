@@ -1,0 +1,46 @@
+AtmoSync - SQL Validation Report
+Target: MySQL / MySQL Workbench
+Script: AtmoSync_Final_MySQL_Complete.sql
+
+Important execution status:
+- The SQL script has been generated and reviewed for the required statements and query logic.
+- This environment does not have MySQL Server, MySQL Workbench, mysql/mariadb CLI, or Docker available.
+- Therefore, the script has NOT been executed against a MySQL instance here. Do not report MySQL execution as completed until you run it in Workbench.
+- The validation results below are independently calculated from the source workbook using Python and are the expected results for the SQL queries.
+
+Expected table row counts:
+Sensor_Data: 1000
+Commodity_Data: 3
+Market_Prices: 9
+Transport_Routes: 3
+Total: 1015
+
+Expected validation results:
+- Exact duplicate rows: 0 in all four data tables.
+- Sensor missing values: 0.
+- Commodity missing values: 0.
+- Market_Prices: 8 NULLs each in min_price_inr_quintal, modal_price_inr_quintal, max_price_inr_quintal; other listed fields populated.
+- Transport_Routes: road_distance_km NULL in 3 rows; estimated_transport_cost_inr NULL in 3 rows.
+- Sensor timestamp continuity: 995 consecutive within-container intervals checked; 0 intervals not equal to 15 minutes. The LAG() query should return 0 rows.
+- Duplicate container/timestamp pairs: 0.
+- Sensor container IDs outside C001-C005: 0.
+- Temperature outside broad bounds -20 to 60 C: 0.
+- Humidity outside 0 to 100%: 0.
+- Negative vibration: 0.
+- Negative market prices: 0.
+- Commodity quantities <= 0: 0.
+- Routes with non-positive populated distance or negative populated cost: 0; missing route values remain unresolved.
+- IQR vibration screen: 6 potential flags; retained as simulated data and not treated as confirmed errors.
+
+Analysis query outputs are expected to include:
+- Average temperature/humidity/vibration grouped by container.
+- Market reported-price min/max/average by commodity.
+- Total commodity quantity by commodity and unit.
+- Route details with NULL distances/costs shown.
+
+Run instructions:
+1. Open MySQL Workbench and connect to your local MySQL server.
+2. Open the complete SQL file.
+3. Execute it. It drops and recreates the four project tables, so it is intended as a rebuild script; do not run if these tables contain data you need to preserve.
+4. Review the row-count query and validation result sets.
+5. Save screenshots/results as evidence and update this report's execution status.

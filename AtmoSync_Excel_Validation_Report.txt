@@ -1,0 +1,36 @@
+AtmoSync - Excel Data Cleaning & Validation Report
+Workbook: AtmoSync_Data_Collection.xlsx
+
+Scope: All workbook sheets were inspected. Original source data was preserved; no records were deleted and no missing values or unusual readings were fabricated/corrected.
+
+Sheet-by-sheet findings:
+START_HERE: 7 rows; no missing values or duplicates. Instruction sheet; no cleaning required.
+Sensor_Data: 1000 rows; 0 exact duplicates; 0 missing cells.
+  - Container IDs: C001-C005; 200 readings per container.
+  - Timestamps: range 2026-11-01 00:00:00 through 2026-11-03 01:45:00.
+  - 995 within-container consecutive intervals checked; all are exactly 15 minutes; no gaps/duplicates found.
+  - Temperature range: 3.96 to 10.78 C.
+  - Relative humidity range: 59.9 to 81.8%.
+  - Vibration range: 0.02 to 0.64 g.
+  - IQR screening: temperature 0 flags; humidity 0 flags; vibration 6 potential flags. Flags are not assumed errors and were retained.
+Commodity_Data: 3 rows; 0 duplicates; 0 missing cells.
+  - Lot IDs are unique (LOT001-LOT003). Records are examples/placeholders. LOT001 variety says example; LOT002/LOT003 variety is not recorded. Notes instruct replacing with actual shipment data.
+Market_Prices: 9 rows; 0 duplicates; 24 missing cells.
+  - 8 rows have missing min/modal/max prices (8 each); these remain blank/NULL. Reported prices and supplied kg price conversions are populated.
+  - Dates and numeric price fields parse; no negative prices found. Source/coverage notes indicate limited market observations.
+Transport_Routes: 3 rows; 0 duplicates; 6 missing cells.
+  - All 3 routes have missing distance and estimated transport cost. Kept blank/NULL; route notes say verification and quotation are required.
+Data_Sources: 6 rows; 0 duplicates; 2 missing cells.
+  - Two source_url values are missing for simulated/example datasets; left blank.
+
+Changes made:
+- Added Validation_Summary, Outlier_Screening and Vibration_Flags sheets to the output workbook.
+- Original six worksheets and their data were retained; no source values were changed.
+- Formatting was normalized on export and headers frozen/filters enabled.
+
+Unresolved items:
+- Example commodity details need actual shipment data if the project is later used operationally.
+- Market price min/modal/max values unavailable for 8 dates.
+- Route distance and refrigerated transport cost unavailable for all 3 routes.
+- Two source URLs absent for simulated/example sources.
+- Six vibration readings flagged statistically for review, not corrected.
