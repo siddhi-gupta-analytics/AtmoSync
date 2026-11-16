@@ -1187,3 +1187,244 @@ FROM Market_Prices ORDER BY price_date;
 SELECT data_status, COUNT(*) AS records FROM Sensor_Data GROUP BY data_status;
 SELECT lot_id, notes FROM Commodity_Data;
 SELECT origin_city, destination_city, data_status, notes FROM Transport_Routes;
+
+-- ===============================================================
+-- CONSOLIDATED DATA VALIDATION SUMMARY
+-- Provides a single result set showing PASS, FAIL, or WARNING.
+-- ===============================================================
+
+SELECT
+    'Sensor_Data Row Count' AS validation_check,
+    CASE
+        WHEN (SELECT COUNT(*) FROM Sensor_Data) = 1000
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END AS validation_status,
+    (SELECT COUNT(*) FROM Sensor_Data) AS observed_value,
+    'Expected: 1000 records' AS details
+
+UNION ALL
+
+SELECT
+    'Commodity_Data Row Count',
+    CASE
+        WHEN (SELECT COUNT(*) FROM Commodity_Data) = 3
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (SELECT COUNT(*) FROM Commodity_Data),
+    'Expected: 3 records'
+
+UNION ALL
+
+SELECT
+    'Market_Prices Row Count',
+    CASE
+        WHEN (SELECT COUNT(*) FROM Market_Prices) = 9
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (SELECT COUNT(*) FROM Market_Prices),
+    'Expected: 9 records'
+
+UNION ALL
+
+SELECT
+    'Transport_Routes Row Count',
+    CASE
+        WHEN (SELECT COUNT(*) FROM Transport_Routes) = 3
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (SELECT COUNT(*) FROM Transport_Routes),
+    'Expected: 3 records'
+
+UNION ALL
+
+SELECT
+    'Duplicate Sensor Readings',
+    CASE
+        WHEN (
+            SELECT COUNT(*)
+            FROM (
+                SELECT container_id, timestamp_local
+                FROM Sensor_Data
+                GROUP BY container_id, timestamp_local
+                HAVING COUNT(*) > 1
+            ) AS duplicates
+        ) = 0
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (
+        SELECT COUNT(*)
+        FROM (
+            SELECT container_id, timestamp_local
+            FROM Sensor_Data
+            GROUP BY container_id, timestamp_local
+            HAVING COUNT(*) > 1
+        ) AS duplicates
+    ),
+    'Expected: 0 duplicate container/timestamp combinations'
+
+UNION ALL
+
+SELECT
+    'Invalid Sensor Timestamp Intervals',
+    CASE
+        WHEN (
+            SELECT COUNT(*)
+            FROM (
+                SELECT
+                    container_id,
+                    timestamp_local,
+                    LAG(timestamp_local) OVER (
+                        PARTITION BY container_id
+                        ORDER BY timestamp_local
+                    ) AS previous_timestamp
+                FROM Sensor_Data
+            ) AS timestamp_check
+            WHERE previous_timestamp IS NOT NULL
+              AND TIMESTAMPDIFF(
+                    MINUTE,
+                    previous_timestamp,
+                    timestamp_local
+                  ) <> 15
+        ) = 0
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (
+        SELECT COUNT(*)
+        FROM (
+            SELECT
+                container_id,
+                timestamp_local,
+                LAG(timestamp_local) OVER (
+                    PARTITION BY container_id
+                    ORDER BY timestamp_local
+                ) AS previous_timestamp
+            FROM Sensor_Data
+        ) AS timestamp_check
+        WHERE previous_timestamp IS NOT NULL
+          AND TIMESTAMPDIFF(
+                MINUTE,
+                previous_timestamp,
+                timestamp_local
+              ) <> 15
+    ),
+    'Expected: 0 intervals different from 15 minutes'
+
+UNION ALL
+
+SELECT
+    'Sensor Range Violations',
+    CASE
+        WHEN (
+            SELECT COUNT(*)
+            FROM Sensor_Data
+            WHERE temperature_c < -20
+               OR temperature_c > 60
+               OR relative_humidity_pct < 0
+               OR relative_humidity_pct > 100
+               OR vibration_g < 0
+        ) = 0
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (
+        SELECT COUNT(*)
+        FROM Sensor_Data
+        WHERE temperature_c < -20
+           OR temperature_c > 60
+           OR relative_humidity_pct < 0
+           OR relative_humidity_pct > 100
+           OR vibration_g < 0
+    ),
+    'Expected: 0 sensor values outside defined physical bounds'
+
+UNION ALL
+
+SELECT
+    'Invalid Commodity Quantities',
+    CASE
+        WHEN (
+            SELECT COUNT(*)
+            FROM Commodity_Data
+            WHERE lot_id IS NULL
+               OR quantity IS NULL
+               OR quantity <= 0
+        ) = 0
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (
+        SELECT COUNT(*)
+        FROM Commodity_Data
+        WHERE lot_id IS NULL
+           OR quantity IS NULL
+           OR quantity <= 0
+    ),
+    'Expected: 0 records with missing IDs or invalid quantities'
+
+UNION ALL
+
+SELECT
+    'Negative Market Prices',
+    CASE
+        WHEN (
+            SELECT COUNT(*)
+            FROM Market_Prices
+            WHERE min_price_inr_quintal < 0
+               OR modal_price_inr_quintal < 0
+               OR max_price_inr_quintal < 0
+               OR reported_price_inr_quintal < 0
+               OR modal_price_inr_kg < 0
+        ) = 0
+        THEN 'PASS'
+        ELSE 'FAIL'
+    END,
+    (
+        SELECT COUNT(*)
+        FROM Market_Prices
+        WHERE min_price_inr_quintal < 0
+           OR modal_price_inr_quintal < 0
+           OR max_price_inr_quintal < 0
+           OR reported_price_inr_quintal < 0
+           OR modal_price_inr_kg < 0
+    ),
+    'Expected: 0 negative price values'
+
+UNION ALL
+
+SELECT
+    'Missing Transport Distance or Cost',
+    CASE
+        WHEN (
+            SELECT COUNT(*)
+            FROM Transport_Routes
+            WHERE road_distance_km IS NULL
+               OR estimated_transport_cost_inr IS NULL
+        ) = 0
+        THEN 'PASS'
+        ELSE 'WARNING'
+    END,
+    (
+        SELECT COUNT(*)
+        FROM Transport_Routes
+        WHERE road_distance_km IS NULL
+           OR estimated_transport_cost_inr IS NULL
+    ),
+    'Missing values require verification; source data is not fabricated'
+
+UNION ALL
+
+SELECT
+    'High Vibration Readings',
+    'INFO',
+    (
+        SELECT COUNT(*)
+        FROM Sensor_Data
+        WHERE vibration_g >= 0.53
+    ),
+    'Readings >= 0.53g are flagged for review; not automatically modified';
