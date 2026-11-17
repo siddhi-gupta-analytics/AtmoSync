@@ -34,3 +34,33 @@ Unresolved items:
 - Route distance and refrigerated transport cost unavailable for all 3 routes.
 - Two source URLs absent for simulated/example sources.
 - Six vibration readings flagged statistically for review, not corrected.
+
+Data Quality Scorecard:
+
+Sensor_Data: PASS
+- Record completeness: 100%.
+- Duplicate checks: Passed.
+- Timestamp consistency: Passed.
+- Physical range checks: Passed based on defined screening criteria.
+- Outlier review: 6 vibration readings flagged for investigation.
+
+Commodity_Data: REVIEW
+- Completeness and duplicate checks: Passed.
+- Unique lot IDs: Confirmed.
+- Example/placeholder records require replacement with actual shipment information.
+
+Market_Prices: REVIEW
+- Duplicate checks: Passed.
+- Negative price checks: Passed.
+- Missing min/modal/max price values: 24 cells across 8 records.
+
+Transport_Routes: REVIEW
+- Duplicate checks: Passed.
+- Distance and refrigerated transport cost: Missing for all 3 routes.
+
+Data_Sources: REVIEW
+- Duplicate checks: Passed.
+- Missing source URLs: 2 records.
+
+Overall Assessment:
+Sensor_Data demonstrates strong structural and temporal consistency. Other datasets require additional information before they can be considered fully operationally ready. Missing values and potential vibration outliers were preserved to maintain source-data integrity. No numerical quality score was assigned because weighted quality criteria were not formally defined.
