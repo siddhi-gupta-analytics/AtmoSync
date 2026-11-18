@@ -44,3 +44,35 @@ Run instructions:
 3. Execute it. It drops and recreates the four project tables, so it is intended as a rebuild script; do not run if these tables contain data you need to preserve.
 4. Review the row-count query and validation result sets.
 5. Save screenshots/results as evidence and update this report's execution status.
+
+SQL Validation Execution Status
+
+Status: Validation queries prepared; execution in MySQL pending.
+
+Validation Coverage:
+- Record counts for all four project tables.
+- Duplicate record and duplicate container/timestamp checks.
+- Missing-value checks.
+- Sensor timestamp continuity validation.
+- Sensor value range validation.
+- Commodity quantity validation.
+- Market price validation.
+- Transport route validation.
+- Vibration outlier screening.
+- Analytical aggregation queries.
+
+Validation Approach:
+The SQL script includes validation queries designed to verify data integrity, consistency, completeness, and expected business rules. Expected results are documented based on the dataset inspection and validation performed during project development.
+
+Execution Limitation:
+The complete SQL script has not yet been executed in a MySQL environment. Therefore, the documented results represent expected validation outcomes and independently inspected dataset findings, not confirmed MySQL execution results.
+
+Next Steps:
+- Execute the SQL script in MySQL Workbench.
+- Review actual query results against the documented expected results.
+- Investigate any discrepancies.
+- Capture execution evidence.
+- Update the execution status after successful verification.
+
+Data Integrity Note:
+The SQL rebuild script drops and recreates project tables. It should only be executed in an environment where existing data in these tables can safely be replaced.
