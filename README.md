@@ -24,9 +24,11 @@ The project currently works with the following datasets:
 - Performed data quality and validation checks.
 - Identified missing values, duplicate records, and potential outliers.
 - Examined sensor readings and timestamp consistency.
-- Created SQL scripts for database setup, data insertion, and validation.
-- Prepared a validated Excel workbook containing validation summaries and screening results.
-- Generated data cleaning and validation reports.
+- Developed SQL scripts for database setup, table definitions, data insertion, and validation.
+- Prepared a validated Excel workbook containing validation summaries, outlier screening, and vibration flags.
+- Generated detailed Excel and SQL validation reports.
+- Added a consolidated SQL validation summary covering record counts, duplicates, missing values, timestamp consistency, and data range checks.
+- Added a data quality scorecard summarizing the validation status of individual datasets.
 
 ## Data Validation
 
@@ -42,6 +44,7 @@ Validation activities include:
 - Transportation route data validation
 
 Potential anomalies are identified for analysis without automatically modifying or deleting the original source records.
+Validation findings and expected results are documented in the Excel and SQL validation reports. SQL validation queries have been prepared, but execution in MySQL is pending.
 
 ## Project Files
 
