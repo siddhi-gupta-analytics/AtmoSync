@@ -1428,3 +1428,49 @@ SELECT
         WHERE vibration_g >= 0.53
     ),
     'Readings >= 0.53g are flagged for review; not automatically modified';
+
+    -- ============================================================
+-- SUDDEN TEMPERATURE CHANGE DETECTION
+-- ============================================================
+
+WITH temperature_trends AS (
+    SELECT
+        container_id,
+        timestamp_local,
+        temperature_c,
+
+        LAG(temperature_c) OVER (
+            PARTITION BY container_id
+            ORDER BY timestamp_local
+        ) AS previous_temperature
+
+    FROM Sensor_Data
+)
+
+SELECT
+    container_id,
+    timestamp_local,
+    previous_temperature,
+    temperature_c,
+
+    ROUND(
+        temperature_c - previous_temperature,
+        2
+    ) AS temperature_change_c,
+
+    CASE
+        WHEN temperature_c - previous_temperature >= 2
+            THEN 'SUDDEN TEMPERATURE INCREASE'
+
+        WHEN temperature_c - previous_temperature <= -2
+            THEN 'SUDDEN TEMPERATURE DECREASE'
+
+        ELSE 'NORMAL CHANGE'
+    END AS temperature_status
+
+FROM temperature_trends
+
+WHERE previous_temperature IS NOT NULL
+  AND ABS(temperature_c - previous_temperature) >= 2
+
+ORDER BY ABS(temperature_c - previous_temperature) DESC;
