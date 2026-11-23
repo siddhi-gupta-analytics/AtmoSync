@@ -1474,3 +1474,47 @@ WHERE previous_temperature IS NOT NULL
   AND ABS(temperature_c - previous_temperature) >= 2
 
 ORDER BY ABS(temperature_c - previous_temperature) DESC;
+
+-- ============================================================
+-- CONTAINER TEMPERATURE STABILITY ANALYSIS
+-- ============================================================
+
+WITH container_temperature_stats AS (
+    SELECT
+        container_id,
+        COUNT(*) AS total_readings,
+        ROUND(AVG(temperature_c), 2) AS average_temperature,
+        ROUND(MIN(temperature_c), 2) AS minimum_temperature,
+        ROUND(MAX(temperature_c), 2) AS maximum_temperature,
+        ROUND(MAX(temperature_c) - MIN(temperature_c), 2) AS temperature_range,
+        ROUND(STDDEV_POP(temperature_c), 3) AS temperature_variability
+    FROM Sensor_Data
+    GROUP BY container_id
+)
+
+SELECT
+    container_id,
+    total_readings,
+    average_temperature,
+    minimum_temperature,
+    maximum_temperature,
+    temperature_range,
+    temperature_variability,
+
+    RANK() OVER (
+        ORDER BY temperature_variability ASC
+    ) AS stability_rank,
+
+    CASE
+        WHEN temperature_variability <= 0.50
+            THEN 'STABLE'
+
+        WHEN temperature_variability <= 1.00
+            THEN 'MODERATE FLUCTUATION'
+
+        ELSE 'HIGH FLUCTUATION'
+    END AS stability_category
+
+FROM container_temperature_stats
+
+ORDER BY stability_rank;
