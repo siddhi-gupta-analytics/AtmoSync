@@ -1518,3 +1518,64 @@ SELECT
 FROM container_temperature_stats
 
 ORDER BY stability_rank;
+
+-- ============================================================
+-- CONTAINER TEMPERATURE RISK ASSESSMENT
+-- ============================================================
+
+SELECT
+    container_id,
+    COUNT(*) AS total_readings,
+
+    SUM(
+        CASE
+            WHEN temperature_c >= 8.0 THEN 1
+            ELSE 0
+        END
+    ) AS high_temperature_readings,
+
+    ROUND(
+        SUM(
+            CASE
+                WHEN temperature_c >= 8.0 THEN 1
+                ELSE 0
+            END
+        ) * 100.0 / COUNT(*),
+        2
+    ) AS high_temperature_percentage,
+
+    ROUND(
+        SUM(
+            CASE
+                WHEN temperature_c >= 8.0 THEN 1
+                ELSE 0
+            END
+        ) * 15 / 60.0,
+        2
+    ) AS estimated_exposure_hours,
+
+    CASE
+        WHEN SUM(
+            CASE
+                WHEN temperature_c >= 8.0 THEN 1
+                ELSE 0
+            END
+        ) = 0
+            THEN 'LOW RISK'
+
+        WHEN SUM(
+            CASE
+                WHEN temperature_c >= 8.0 THEN 1
+                ELSE 0
+            END
+        ) * 100.0 / COUNT(*) <= 10
+            THEN 'MODERATE RISK'
+
+        ELSE 'HIGH RISK'
+    END AS risk_category
+
+FROM Sensor_Data
+
+GROUP BY container_id
+
+ORDER BY high_temperature_percentage DESC;
