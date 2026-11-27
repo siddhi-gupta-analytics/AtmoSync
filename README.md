@@ -70,3 +70,18 @@ This project was completed collaboratively by a team of four members, with respo
 
 ## Project Status
 Power BI dashboard completed. Further validation and documentation are in progress.
+
+
+## Dashboard Preview
+
+### 1. Executive Overview
+![Executive Overview](Dashboard_Screenshots/01_Executive_Overview.png)
+
+### 2. Sensor Monitoring
+![Sensor Monitoring](Dashboard_Screenshots/02_Sensor_Monitoring.png)
+
+### 3. Market Intelligence
+![Market Intelligence](Dashboard_Screenshots/03_Market_Intelligence.png)
+
+### 4. Commodity & Logistics
+![Commodity & Logistics](Dashboard_Screenshots/04_Commodity_Logistics.png)
